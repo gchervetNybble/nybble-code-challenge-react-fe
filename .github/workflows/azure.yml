@@ -1,0 +1,32 @@
+name: Azure Deploy
+on:
+  push:
+    branches:
+      - master
+env:
+  AZURE_WEBAPP_NAME: http-trigger-text
+  AZURE_WEBAPP_PACKAGE_PATH: '.'
+  NODE_VERSION: '10.x'
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: npm install, build, and test
+        run: |
+          # Build and test the project, then
+          # deploy to Azure Web App.
+          npm install
+          npm run build --if-present
+          npm run test --if-present
+      - name: 'Run Azure webapp deploy action using publish profile credentials'
+        uses: azure/webapps-deploy@v1
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
